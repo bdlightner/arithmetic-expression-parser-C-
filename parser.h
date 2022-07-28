@@ -18,6 +18,8 @@
 #include <math.h>
 #include <ctype.h>
 
+char *GetParserErr(void);
+
 typedef struct _fun1_entry {
     char *name;  // function name string
     double (*fun)(double p1);

@@ -65,21 +65,30 @@ is currently at:
 
 static jmp_buf parse_err_jmp_buf;
 
-void runtime_error(const char *String, ...)
+static char ParserErrBuf[256];
+
+char *GetParserErr(void)
+{
+    return &ParserErrBuf[0];
+}
+
+static void runtime_error(const char *String, ...)
 {
     va_list ArgPtr;
-    static char LogBuf[256];
 
-    strcpy(LogBuf, "Error! ");
+    strcpy(ParserErrBuf, "Error! ");
     va_start(ArgPtr, String);
-    vsnprintf(LogBuf + strlen(LogBuf),
-                         sizeof(LogBuf) - strlen(LogBuf) - 1, String, ArgPtr);
+    vsnprintf(ParserErrBuf + strlen(ParserErrBuf),
+             sizeof(ParserErrBuf) - strlen(ParserErrBuf) - 1, String, ArgPtr);
     va_end(ArgPtr);
-    LogBuf[sizeof(LogBuf) - 1] = '\0';  // safety knows no season!
+    ParserErrBuf[sizeof(ParserErrBuf) - 1] = '\0';  // safety knows no season!
 
+#ifdef ENABLE_PARSER_ERR_OUTPUT
     fflush(stdout);
-    fprintf(stderr, "%s\n", LogBuf);
+    fprintf(stderr, "%s\n", ParserErrBuf);
     fflush(stderr);
+#endif
+
     longjmp(parse_err_jmp_buf, 1);
 }
 
@@ -236,17 +245,17 @@ double DoPercent(double arg)
         return 0.0;
 }
 
-const double DoMin(const double arg1, const double arg2)
+double DoMin(const double arg1, const double arg2)
 {
     return (arg1 < arg2 ? arg1 : arg2);
 }
 
-const double DoMax(const double arg1, const double arg2)
+double DoMax(const double arg1, const double arg2)
 {
     return (arg1 > arg2 ? arg1 : arg2);
 }
 
-const double DoFmod(const double arg1, const double arg2)
+double DoFmod(const double arg1, const double arg2)
 {
     if (arg2 == 0.0)
         runtime_error("Divide by zero in mod");
@@ -254,19 +263,19 @@ const double DoFmod(const double arg1, const double arg2)
     return fmod(arg1, arg2);
 }
 
-const double DoPow(const double arg1, const double arg2)
+double DoPow(const double arg1, const double arg2)
 {
     return pow(arg1, arg2);
 }
 
 #ifdef HAVE_ROLL
-const double DoRoll(const double arg1, const double arg2)
+double DoRoll(const double arg1, const double arg2)
 {
     return roll(static_cast < int >(arg1), static_cast < int >(arg2));
 }
 #endif
 
-const double DoIf(const double arg1, const double arg2, const double arg3)
+double DoIf(const double arg1, const double arg2, const double arg3)
 {
     if (arg1 != 0.0)
         return arg2;
@@ -712,7 +721,7 @@ double Primary(const bool get)  // primary (base) tokens
 
 }
 
-const double Term(const bool get)       // multiply and divide
+double Term(const bool get)       // multiply and divide
 {
     double left = Primary(get);
     DBG("---------Term(%d)=%g\n", type_, left);
@@ -738,7 +747,7 @@ const double Term(const bool get)       // multiply and divide
     }
 }
 
-const double AddSubtract(const bool get)        // add and subtract
+double AddSubtract(const bool get)        // add and subtract
 {
     double left = Term(get);
     DBG("---------AddSubtract(%d)=%g\n", type_, left);
@@ -756,7 +765,7 @@ const double AddSubtract(const bool get)        // add and subtract
     }
 }
 
-const double Comparison(const bool get) // LT, GT, LE, EQ etc.
+double Comparison(const bool get) // LT, GT, LE, EQ etc.
 {
     double left = AddSubtract(get);
     DBG("---------Comparison(%d)=%g\n", type_, left);
@@ -786,7 +795,7 @@ const double Comparison(const bool get) // LT, GT, LE, EQ etc.
     }
 }
 
-const double Expression(const bool get) // AND and OR
+double Expression(const bool get) // AND and OR
 {
     double left = Comparison(get);
     DBG("---------Expression(%d)=%g\n", type_, left);
@@ -813,7 +822,7 @@ const double Expression(const bool get) // AND and OR
 // initialise random number generator
 static int someNumber = 0;
 
-const double CommaList(const bool get)  // expr1, expr2
+double CommaList(const bool get)  // expr1, expr2
 {
     double left;
 
@@ -833,10 +842,12 @@ const double CommaList(const bool get)  // expr1, expr2
     }
 }
 
-const double Evaluate(char *expr)  // get result
+double Evaluate(char *expr)  // get result
 {
     int ok;
     double v;
+
+    ParserErrBuf[0] = '\0';  // default to NULL error string
 
     if( !setjmp(parse_err_jmp_buf) ) {
         SaveSymbol("pi", 3.1415926535897932385);
@@ -848,7 +859,7 @@ const double Evaluate(char *expr)  // get result
         type_ = NONE;
         v = CommaList(true);
         if (type_ != END)
-            runtime_error ("Unexpected text at end of expression: '%s'",
+            runtime_error("Unexpected text at end of expression: '%s'",
                                                                  pWordStart_);
         return v;
     } else {

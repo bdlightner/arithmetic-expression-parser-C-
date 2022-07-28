@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "parser.h"
 
@@ -16,6 +15,7 @@ int main(void)
         if (*expr == '\0') break;
         printf("Evaluate(\"%s\")\n", expr);
         result = Evaluate(expr);
+        if (*GetParserErr()) printf("%s\n", GetParserErr());
         printf("%s = %.16g\n", expr, result);
     }
     return 0;
