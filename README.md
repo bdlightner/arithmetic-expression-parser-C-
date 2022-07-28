@@ -50,16 +50,16 @@ Whitespace is ignored. However 2-character symbols (such as ==) cannot have imbe
 The parser supports an unlimited number of named symbols (eg. "str", "dex") which can be pre-assigned values, or assigned during use.
 
 Example (in C):
-
-	#include "parser.h"
-	int ok;
-	double str;
-	double result;
-	SaveSymbol("str", 55); // assign value to "str"
-	SaveSymbol("dex", 67); // assign value to "dex"
-	result = Evaluate ("str + dex * 2"); // use in expression
-	ok = LookupSymbol("pi", &str);  // retrieve value of "str"
-	
+```C
+#include "parser.h"
+int ok;
+double str;
+double result;
+SaveSymbol("str", 55); // assign value to "str"
+SaveSymbol("dex", 67); // assign value to "dex"
+result = Evaluate ("str + dex * 2"); // use in expression
+ok = LookupSymbol("pi", &str);  // retrieve value of "str"
+```
 	Example: a=42, b=6, a*b
 	Result: 252
 	
@@ -184,15 +184,19 @@ However, as the expression is evaluated left-to-right, what the above example do
 
 To use the parser in C code, use it like this:
 
-	double result = Evaluate ("2 + 3 * 6);
+```C
+double result = Evaluate ("2 + 3 * 6);
+```
 	
 Variables can be fed in, or retrieved, like this:
 	
-	double c, result;
-	SaveSymbol ("a", 22); // value for symbol "a"
-	SaveSymbol (“b", 33); // value for symbol "b"
-	result = Evaluate ("c = a + b", &v);
-	LookupSymbol ("c", &c); // retrieve symbol "c"
+```C
+double c, result;
+SaveSymbol ("a", 22); // value for symbol "a"
+SaveSymbol ("b", 33); // value for symbol "b"
+result = Evaluate ("c = a + b", &v);
+LookupSymbol ("c", &c); // retrieve symbol "c"
+```
 
 This effectively lets you not only return a result (the evaluated expression) but change other symbols as side-effects.
 
