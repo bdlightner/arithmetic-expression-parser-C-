@@ -183,7 +183,9 @@ However, as the expression is evaluated left-to-right, what the above example do
 To use the parser in C code, use it like this:
 
 	double result = Evaluate ("2 + 3 * 6);
-	Variables can be fed in, or retrieved, using operator[], like this:
+	
+Variables can be fed in, or retrieved, like this:
+	
 	double c, result;
 	SaveSymbol ("a", 22); // value for symbol "a"
 	SaveSymbol (“b", 33); // value for symbol "b"
