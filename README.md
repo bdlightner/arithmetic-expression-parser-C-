@@ -198,4 +198,5 @@ This work derived from “Expression Parser written in C++” by Nick Gammon (14
 
 ## Licensing
 Original C++ code (c) Copyright Nick Gammon 2004. Permission to copy, use, modify, sell and distribute this software is granted provided this copyright notice appears in all copies. This software is provided "as is" without express or implied warranty, and with no claim as to its suitability for any purpose.
+
 Modified C code (c) Copyright Bruce D Lightner 2022. Permission to copy, use, modify, sell and distribute this software is granted provided both copyright notices appear in all copies. This software is provided "as is" without express or implied warranty, and with no claim as to its suitability for any purpose.
