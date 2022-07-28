@@ -5,7 +5,7 @@ Parsing is done by processing a "string" expression (i.e., text) and producing a
 
 	Example: 2 + 2
 	Result: 4
-	Example: log10 (1234)
+	Example: log10(1234)
 	Result: 3.09132
 
 The parser builds up results "on the fly" reporting syntax problems by returning an exception.
@@ -194,7 +194,7 @@ Variables can be fed in, or retrieved, like this:
 double c, result;
 SaveSymbol ("a", 22); // value for symbol "a"
 SaveSymbol ("b", 33); // value for symbol "b"
-result = Evaluate ("c = a + b", &v);
+result = Evaluate ("c = a + b");
 LookupSymbol ("c", &c); // retrieve symbol "c"
 ```
 
