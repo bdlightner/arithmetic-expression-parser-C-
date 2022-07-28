@@ -12,7 +12,9 @@ The parser builds up results "on the fly" reporting syntax problems by returning
 
 	Example: 1 + 3 + )
 	exception: Unexpected token: ‘)’
-	Run-time errors (principally "divide by zero") are also returned as an exception:
+	
+Run-time errors (principally "divide by zero") are also returned as an exception:
+
 	Example: 2 / 0
 	exception: Divide by zero
 
@@ -144,13 +146,13 @@ eg. percent (40) will be true 40% of the time
 
 ### Two-argument functions
 
-min (arg1, arg2) <-- returns whichever is the lower
-max (arg1, arg2) <-- returns whichever is the higher
-mod (arg1, arg2) <-- returns the remainder of arg1 / arg2 - throws an exception if arg2 is zero
-pow (arg1, arg2) <-- returns arg1 to the power arg2 (same result as arg1^arg2)
-roll (arg1, arg2) <-- rolls an arg2-sided dice arg1 times. (unsupported with Windows)
+	min (arg1, arg2) <-- returns whichever is the lower
+	max (arg1, arg2) <-- returns whichever is the higher
+	mod (arg1, arg2) <-- returns the remainder of arg1 / arg2 - throws an exception if arg2 is zero
+	pow (arg1, arg2) <-- returns arg1 to the power arg2 (same result as arg1^arg2)
+	roll (arg1, arg2) <-- rolls an arg2-sided dice arg1 times. (unsupported with Windows)
 
-	Example: roll (2, 4) (in other words 2d4)
+	Example: min (10, 20)
 	Result: 10
 	
 ### If Test
