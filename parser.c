@@ -363,7 +363,7 @@ static char *vars_lhs[MAX_VARS];
 static double vars_rhs[MAX_VARS];
 static int num_vars = 0;
 
-static int SaveSymbol(char *lhs, double rhs)
+int SaveSymbol(char *lhs, double rhs)
 {
     int i;
 
@@ -383,7 +383,7 @@ static int SaveSymbol(char *lhs, double rhs)
     return 1;  // no error exit
 }
 
-static int LookupSymbol(char *lhs, double *rhs)
+int LookupSymbol(char *lhs, double *rhs)
 {
     int i;
 

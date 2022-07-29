@@ -1,4 +1,3 @@
-// parser.h - expression parser in pure C
 //
 // Original parser C++ code from https://github.com/nickgammon/parser/
 //
@@ -19,6 +18,8 @@
 #include <ctype.h>
 
 char *GetParserErr(void);
+int LookupSymbol(char *lhs, double *rhs);
+int SaveSymbol(char *lhs, double rhs);
 
 typedef struct _fun1_entry {
     char *name;  // function name string
