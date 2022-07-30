@@ -5,18 +5,18 @@
 
 int main(void)
 {
-    double result = 0;;
     char *p, expr[1024];
+    double result = 0;;
 
     while (1) {
-        printf("? "); fflush(stdout);
-        fgets(expr, sizeof(expr), stdin);
-        p = expr + strlen(expr) - 1;
-        while (*p && *p < ' ') *(p--) = '\0';
-        if (*expr == '\0') break;
-        result = Evaluate(expr);
-        printf("%s = %.16g\n", expr, result);
-        if (*GetParserErr()) printf("%s\n", GetParserErr());
+        printf("? "); fflush(stdout);  // prompt user for expression string
+        fgets(expr, sizeof(expr), stdin);  // read text line
+        p = expr + strlen(expr) - 1;  // trim input line
+        while (p >= expr && *p < ' ') *(p--) = '\0';
+        if (*expr == '\0') break;  // exit if no expression
+        result = Evaluate(expr);  // evaluate entered expression
+        printf("%s = %.16g\n", expr, result);  // show expression and result
+        if (*GetParserErr()) printf("%s\n", GetParserErr()); // print error?
     }
     return 0;
 }
