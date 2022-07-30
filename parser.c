@@ -328,7 +328,7 @@ Syntax:
 
 static double DoInt(double arg)
 {
-    return (int)arg;           // drop fractional part
+    return (double)((int64_t)arg);    // drop fractional part
 }
 
 static double DoRandom(double arg)
