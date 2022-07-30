@@ -47,13 +47,18 @@ Whitespace is ignored. However 2-character symbols (such as ==) cannot have imbe
 
 ### Using in a Program
 
-To use the parser in C code do this:
+To utilize the parser in C code, do something like this:
 
 ```C
 #include "parser.h"
-
-double result = Evaluate ("2 + 3 * 6");
+double result;
+result = Evaluate ("2 + 3 * 6");
+printf("%.16g\n", result);
 ```
+
+Output:
+
+	20
 
 ### Symbols
 
