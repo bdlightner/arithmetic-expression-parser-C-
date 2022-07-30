@@ -53,8 +53,17 @@ is currently at:
 
 ******************************************************************************/
 
-#include <setjmp.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
+#include <string.h>
+#include <sys/timeb.h>
+#include <time.h>
+#include <memory.h>
+#include <setjmp.h>
+#include <stdarg.h>
+#include <math.h>
+#include <ctype.h>
 
 #include "parser.h"
 
@@ -73,11 +82,91 @@ is currently at:
     } \
 }
 
+// normally defined in <math.h>
+#ifndef M_PI
+#define M_PI (3.1415926535897932385)
+#endif
+
+#ifndef M_E
+#define M_E (2.7182818284590452354)
+#endif
+
+typedef struct _fun1_entry {
+    char *name;  // function name string
+    double (*fun)(double p1);
+} const FUN1_ENTRY;
+
+typedef struct _fun2_entry {
+    char *name;  // function name string
+    double (*fun)(double p1, double p2);
+} const FUN2_ENTRY;
+
+typedef struct _fun3_entry {
+    char *name;  // function name string
+    double (*fun)(double p1, double p2, double p3);
+} const FUN3_ENTRY;
+
+#define FUN_TABLE_ENTRY(fun) { #fun, fun },
+
+#define bool int
+#define true (1)
+#define false (0)
+
+enum TokenType {
+    NONE,
+    NAME,
+    NUMBER,
+    END,
+    PLUS='+',
+    MINUS='-',
+    MULTIPLY='*',
+    POWER='^',
+    DIVIDE='/',
+    ASSIGN='=',
+    LHPAREN='(',
+    RHPAREN=')',
+    COMMA=',',
+    NOT='!',
+    
+    // comparisons
+    LT='<',
+    GT='>',
+    LE,     // <=
+    GE,     // >=
+    EQ,     // ==
+    NE,     // !=
+    AND,    // &&
+    OR,      // ||
+    
+    // special assignments
+    
+    ASSIGN_ADD,  //  +=
+    ASSIGN_SUB,  //  +-
+    ASSIGN_MUL,  //  +*
+    ASSIGN_DIV   //  +/
+};
+
+static const char *pWord_;
+static const char *pWordStart_;
+static enum TokenType type_; // last token parsed
+static double value_;
+
+#define MAX_WORD 1024  /* maximum size of a token */
+static char word_[MAX_WORD];
+
+static enum TokenType GetToken(const bool ignoreSign);  
+static double CommaList(const bool get);
+static double Expression(const bool get);
+static double Comparison(const bool get);
+static double AddSubtract(const bool get);
+static double Term(const bool get);      // multiply and divide
+static double Primary(const bool get);   // primary (base) tokens
+
 static jmp_buf parse_err_jmp_buf;
 
 static char ParserErrBuf[256];
 
-char *GetParserErr(void)
+char *GetParserErr(void)  // returns empty string if no parse error
 {
     return &ParserErrBuf[0];
 }
@@ -237,17 +326,17 @@ Syntax:
 
 // functions we can call from an expression
 
-double DoInt(double arg)
+static double DoInt(double arg)
 {
     return (int)arg;           // drop fractional part
 }
 
-double DoRandom(double arg)
+static double DoRandom(double arg)
 {
     return getrandom(arg);      // random number in range 0 to arg
 }
 
-double DoPercent(double arg)
+static double DoPercent(double arg)
 {
     if (percent(arg))   // true x% of the time
          return 1.0;
@@ -255,17 +344,17 @@ double DoPercent(double arg)
         return 0.0;
 }
 
-double DoMin(const double arg1, const double arg2)
+static double DoMin(const double arg1, const double arg2)
 {
     return (arg1 < arg2 ? arg1 : arg2);
 }
 
-double DoMax(const double arg1, const double arg2)
+static double DoMax(const double arg1, const double arg2)
 {
     return (arg1 > arg2 ? arg1 : arg2);
 }
 
-double DoFmod(const double arg1, const double arg2)
+static double DoFmod(const double arg1, const double arg2)
 {
     if (arg2 == 0.0)
         runtime_error("Divide by zero in mod");
@@ -273,7 +362,7 @@ double DoFmod(const double arg1, const double arg2)
     return fmod(arg1, arg2);
 }
 
-double DoPow(const double arg1, const double arg2)
+static double DoPow(const double arg1, const double arg2)
 {
     int n;
     double result;
@@ -290,13 +379,13 @@ double DoPow(const double arg1, const double arg2)
 }
 
 #ifdef HAVE_ROLL
-double DoRoll(const double arg1, const double arg2)
+static double DoRoll(const double arg1, const double arg2)
 {
     return roll(static_cast < int >(arg1), static_cast < int >(arg2));
 }
 #endif
 
-double DoIf(const double arg1, const double arg2, const double arg3)
+static double DoIf(const double arg1, const double arg2, const double arg3)
 {
     if (arg1 != 0.0)
         return arg2;
@@ -378,10 +467,9 @@ static FUN3_ENTRY *LookupFun3(char *name)
     return NULL;
 }
 
-#define MAX_VARS 100
 #define NO_LHS_MATCH (sqrt(-1))
-static char *vars_lhs[MAX_VARS];
-static double vars_rhs[MAX_VARS];
+static char *vars_lhs[MAX_PARSE_SYMBOLS];
+static double vars_rhs[MAX_PARSE_SYMBOLS];
 static int num_vars = 0;
 
 int SaveSymbol(char *lhs, double rhs)
@@ -392,7 +480,7 @@ int SaveSymbol(char *lhs, double rhs)
     for (i = 0; i < num_vars; ++i) {  // aleady in table?
         if (!strcmp(vars_lhs[i], lhs)) {
             vars_rhs[i] = rhs;
-            return 1;  // no error exit
+            return 1;  // found exit
         }
     }
     // symbol not found...add new entry in table
@@ -401,7 +489,7 @@ int SaveSymbol(char *lhs, double rhs)
     strcpy(vars_lhs[num_vars], lhs);
     vars_rhs[num_vars] = rhs;
     ++num_vars;
-    return 1;  // no error exit
+    return 0;  // not found
 }
 
 double LookupSymbol(char *lhs)
@@ -437,7 +525,7 @@ double LookupSymbol(char *lhs)
     return rhs;  // no match
 }
 
-enum TokenType GetToken(const bool ignoreSign)
+static enum TokenType GetToken(const bool ignoreSign)
 {
     unsigned char cFirstCharacter;
     unsigned char cNextCharacter;
@@ -624,7 +712,7 @@ enum TokenType GetToken(const bool ignoreSign)
     return type_ = NAME;
 }
 
-double Primary(const bool get)  // primary (base) tokens
+static double Primary(const bool get)  // primary (base) tokens
 {
     if (get)
         GetToken(false);                // one-token lookahead  
@@ -757,7 +845,7 @@ double Primary(const bool get)  // primary (base) tokens
 
 }
 
-double Term(const bool get)       // multiply and divide
+static double Term(const bool get)       // multiply and divide
 {
     double left = Primary(get);
     DBG("---------Term(%d)=%g\n", type_, left);
@@ -783,7 +871,7 @@ double Term(const bool get)       // multiply and divide
     }
 }
 
-double AddSubtract(const bool get)        // add and subtract
+static double AddSubtract(const bool get)        // add and subtract
 {
     double left = Term(get);
     DBG("---------AddSubtract(%d)=%g\n", type_, left);
@@ -801,7 +889,7 @@ double AddSubtract(const bool get)        // add and subtract
     }
 }
 
-double Comparison(const bool get) // LT, GT, LE, EQ etc.
+static double Comparison(const bool get) // LT, GT, LE, EQ etc.
 {
     double left = AddSubtract(get);
     DBG("---------Comparison(%d)=%g\n", type_, left);
@@ -831,7 +919,7 @@ double Comparison(const bool get) // LT, GT, LE, EQ etc.
     }
 }
 
-double Expression(const bool get) // AND and OR
+static double Expression(const bool get) // AND and OR
 {
     double left = Comparison(get);
     DBG("---------Expression(%d)=%g\n", type_, left);
@@ -858,7 +946,7 @@ double Expression(const bool get) // AND and OR
 // initialise random number generator
 static int someNumber = 0;
 
-double CommaList(const bool get)  // expr1, expr2
+static double CommaList(const bool get)  // expr1, expr2
 {
     double left;
 
