@@ -13,10 +13,9 @@ int main(void)
         memset(expr, 0, sizeof(expr));
         gets(expr);
         if (*expr == '\0') break;
-        printf("Evaluate(\"%s\")\n", expr);
         result = Evaluate(expr);
-        if (*GetParserErr()) printf("%s\n", GetParserErr());
         printf("%s = %.16g\n", expr, result);
+        if (*GetParserErr()) printf("%s\n", GetParserErr());
     }
     return 0;
 }
