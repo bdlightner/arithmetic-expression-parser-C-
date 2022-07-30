@@ -53,12 +53,16 @@ is currently at:
 
 ******************************************************************************/
 
-#include<setjmp.h>
-#include<stdlib.h>
+#include <setjmp.h>
+#include <stdlib.h>
 
 #include "parser.h"
 
 #define DBG if(0)printf
+
+#ifndef WIN32
+#include <sys/time.h>
+#endif
 
 #define STRNCPY(dst, src, len) \
         { strncpy(dst, src, len); if (len >= 0) dst[len] = '\0'; }
@@ -229,7 +233,7 @@ Syntax:
 
 double DoInt(double arg)
 {
-    return (int) arg;           // drop fractional part
+    return (int)arg;           // drop fractional part
 }
 
 double DoRandom(double arg)
@@ -265,7 +269,18 @@ double DoFmod(const double arg1, const double arg2)
 
 double DoPow(const double arg1, const double arg2)
 {
-    return pow(arg1, arg2);
+    int i, n;
+    double result;
+
+    n = (int)arg2;
+    if (n <= 64 && (double)n == arg2) {
+        // do it the "hard way", but with more precision
+        result = arg1;
+        for (i = 0; i < n - 1; ++i) result *= arg1;
+        return result;
+    } else {
+        return pow(arg1, arg2);
+    }
 }
 
 #ifdef HAVE_ROLL
@@ -389,6 +404,21 @@ double LookupSymbol(char *lhs)
     double rhs;
 
     DBG("LookupSymbol('%s')", lhs);
+    if (!strcmp(lhs, "time")) {  // "time" built-in (secs since 1970 epoch)
+        return (double)time(NULL);
+    }
+#if !defined(WIN32) || defined(HAVE_GETTIMEOFDAY)
+    if (!strcmp(lhs, "timems")) {  // "timems" built-in (msecs since 1970 epoch)
+        typedef struct timeval {
+            long tv_sec;
+            long tv_usec;
+        } timeval;
+        struct timeval tv;
+
+        gettimeofday(&tv, NULL);
+        return ((double)tv.tv_sec * 1000 + (double)tv.tv_usec / 1000); 
+    }
+#endif
     for (i = 0; i < num_vars; ++i) {
         if (!strcmp(vars_lhs[i], lhs)) {
             rhs = vars_rhs[i];  // match
@@ -576,7 +606,7 @@ enum TokenType GetToken(const bool ignoreSign)
         if (cFirstCharacter < ' ') {
             runtime_error("Unexpected character 0x%02x", cFirstCharacter);
         } else
-            runtime_error("Unexpected character %c", cFirstCharacter);
+            runtime_error("Unexpected character '%c'", cFirstCharacter);
     }
     // we have a word (starting with A-Z) - pull it out
     while (isalnum(*pWord_) || *pWord_ == '_')
