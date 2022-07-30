@@ -90,7 +90,7 @@ double result;
 SaveSymbol("str", 55); // assign value to "str"
 SaveSymbol("dex", 67); // assign value to "dex"
 result = Evaluate("str + dex * 2"); // use in expression
-ok = LookupSymbol("pi", &str);  // retrieve value of "str"
+str = LookupSymbol("pi");  // retrieve value of "str"
 ```
 This effectively lets you not only return a result (the evaluated expression) but change other symbols as side-effects.
 
