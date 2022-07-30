@@ -45,6 +45,28 @@ Parentheses can be used to change evaluation order.
 	
 Whitespace is ignored. However 2-character symbols (such as ==) cannot have imbedded spaces.
 
+### Using in a Program
+
+To use the parser in C code do this:
+
+```C
+#include "parser.h"
+
+double result = Evaluate ("2 + 3 * 6);
+```
+	
+Variables can be fed in, or retrieved, like this:
+	
+```C
+double result, c;
+SaveSymbol ("a", 22); // value for symbol "a"
+SaveSymbol ("b", 33); // value for symbol "b"
+result = Evaluate ("c = a + b");
+LookupSymbol ("c", &c); // retrieve symbol "c"
+```
+
+This effectively lets you not only return a result (the evaluated expression) but change other symbols as side-effects.
+
 ### Symbols
 
 The parser supports an unlimited number of named symbols (eg. "str", "dex") which can be pre-assigned values, or assigned during use.
@@ -158,7 +180,7 @@ eg. percent (40) will be true 40% of the time
 	
 ### If Test
 
-Finally you can do "if" tests by using the "if" function.
+You can do "if" tests by using the "if" function.
 
 if (test-value, true-value, false-value)
 
@@ -180,27 +202,6 @@ However, as the expression is evaluated left-to-right, what the above example do
 2.	Assign 20 to b
 3.	Add a to b
 4.	The result of the expression is 30
-
-### Using in a Program
-
-To use the parser in C code, use it like this:
-
-```C
-double result = Evaluate ("2 + 3 * 6);
-```
-	
-Variables can be fed in, or retrieved, like this:
-	
-```C
-double c, result;
-SaveSymbol ("a", 22); // value for symbol "a"
-SaveSymbol ("b", 33); // value for symbol "b"
-result = Evaluate ("c = a + b");
-LookupSymbol ("c", &c); // retrieve symbol "c"
-```
-
-This effectively lets you not only return a result (the evaluated expression) but change other symbols as side-effects.
-
 
 ## Credits
 This work derived from “Expression Parser written in C++” by Nick Gammon (14 September 2004) located at https://github.com/nickgammon/parser. First converted to pure ANSI C by Bruce D. Lightner (lightner@lightner.net), La Jolla, California in July 2022.
