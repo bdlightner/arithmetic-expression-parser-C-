@@ -17,6 +17,15 @@
 #include <math.h>
 #include <ctype.h>
 
+// normally defined in <math.h>
+#ifndef M_PI
+#define M_PI (3.1415926535897932385)
+#endif
+
+#ifndef M_E
+#define M_E (2.7182818284590452354)
+#endif
+
 char *GetParserErr(void);
 double LookupSymbol(char *lhs);
 int SaveSymbol(char *lhs, double rhs);
