@@ -18,7 +18,7 @@
 #include <ctype.h>
 
 char *GetParserErr(void);
-int LookupSymbol(char *lhs, double *rhs);
+double LookupSymbol(char *lhs);
 int SaveSymbol(char *lhs, double rhs);
 
 typedef struct _fun1_entry {

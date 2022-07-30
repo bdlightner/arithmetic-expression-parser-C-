@@ -383,21 +383,22 @@ int SaveSymbol(char *lhs, double rhs)
     return 1;  // no error exit
 }
 
-int LookupSymbol(char *lhs, double *rhs)
+double LookupSymbol(char *lhs)
 {
     int i;
+    double rhs;
 
     DBG("LookupSymbol('%s')", lhs);
     for (i = 0; i < num_vars; ++i) {
         if (!strcmp(vars_lhs[i], lhs)) {
-            *rhs = vars_rhs[i];  // match
-            DBG("=%g\n", *rhs);
-            return 1;
+            rhs = vars_rhs[i];  // match
+            DBG("=%g\n", rhs);
+            return rhs;  // return symbol value
         }
     }
-    *rhs = NO_LHS_MATCH;
-    DBG("=%g\n", *rhs);
-    return 0;  // no match
+    rhs = NO_LHS_MATCH;
+    DBG("=%g\n", rhs);
+    return rhs;  // no match
 }
 
 enum TokenType GetToken(const bool ignoreSign)
@@ -657,8 +658,7 @@ double Primary(const bool get)  // primary (base) tokens
             }
             // not a function? must be a symbol in the symbol table
             //double &v = symbols_[word]; // get REFERENCE to symbol table entry
-            if (!LookupSymbol(word, &v)) {
-                v = 0.0;
+            if ((v = LookupSymbol(word)) == NO_LHS_MATCH) {
                 SaveSymbol(word, v);  // not found, add to table
             }
             // change table entry with expression? (eg. a = 22, or a = 22)
@@ -852,8 +852,7 @@ double Evaluate(char *expr)  // get result
     if( !setjmp(parse_err_jmp_buf) ) {
         SaveSymbol("pi", M_PI); // 3.1415926535897932385
         SaveSymbol("e",  M_E);  // 2.7182818284590452354
-        ok = LookupSymbol("pi", &v);
-        DBG("ok=%d, v=%g\n", ok, v);
+        DBG("ok=%d, v=%g\n", ok, LookupSymbol("pi"));
 
         pWord_ = expr;
         type_ = NONE;
