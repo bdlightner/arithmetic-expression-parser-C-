@@ -1,6 +1,4 @@
-//
-// Original parser C++ code from https://github.com/nickgammon/parser/
-//
+// parser.h
 
 #ifndef PARSER_H
 #define PARSER_H
@@ -9,9 +7,11 @@
 #define MAX_PARSE_SYMBOLS (100)  /* maxium parser symbols allowed */
 #endif
 
-int SaveSymbol(char *lhs, double rhs);
-double LookupSymbol(char *lhs);
-char *GetParserErr(void);  // returns empty string if no parse error
-double Evaluate(char *string);  // get result
+#define PARSE_ERROR (sqrt(-1)) /* indicates Evaluate()/LookupSymbol failure */
+
+int SaveSymbol(char *lhs, double rhs); // returns 1:success, 0:malloc() failed
+double LookupSymbol(char *lhs); // returns NO_LHS_MATCH if lookup fails
+char *GetParserErr(void); // returns non-empty error string on Evaluate() fails
+double Evaluate(char *string); // returns result (or NO_LHS_MATCH if error)
 
 #endif // PARSER_H

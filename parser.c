@@ -467,12 +467,11 @@ static FUN3_ENTRY *LookupFun3(char *name)
     return NULL;
 }
 
-#define NO_LHS_MATCH (sqrt(-1))
 static char *vars_lhs[MAX_PARSE_SYMBOLS];
 static double vars_rhs[MAX_PARSE_SYMBOLS];
 static int num_vars = 0;
 
-int SaveSymbol(char *lhs, double rhs)
+int SaveSymbol(char *lhs, double rhs) // returns 1:success, 0:malloc() failed
 {
     int i;
 
@@ -520,7 +519,7 @@ double LookupSymbol(char *lhs)
             return rhs;  // return symbol value
         }
     }
-    rhs = NO_LHS_MATCH;
+    rhs = PARSE_ERROR;
     DBG("=%g\n", rhs);
     return rhs;  // no match
 }
@@ -782,7 +781,7 @@ static double Primary(const bool get)  // primary (base) tokens
             }
             // not a function? must be a symbol in the symbol table
             //double &v = symbols_[word]; // get REFERENCE to symbol table entry
-            if ((v = LookupSymbol(word)) == NO_LHS_MATCH) {
+            if ((v = LookupSymbol(word)) == PARSE_ERROR) {
                 SaveSymbol(word, v);  // not found, add to table
             }
             // change table entry with expression? (eg. a = 22, or a = 22)
