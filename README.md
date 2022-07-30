@@ -73,6 +73,7 @@ Symbols can be any length, and must consist of A-Z, a-z, or 0-9, or the undersco
 ### Assignment
 
 Pre-loaded symbols, or ones created on-the-fly, can be assigned to, including the standard C operators of +=, -=, *= and /=.
+
 	Example: a=42, a/=7
 	Result: 6
 	Example: dex = 10, dex += 22
