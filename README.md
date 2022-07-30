@@ -52,26 +52,33 @@ To use the parser in C code do this:
 ```C
 #include "parser.h"
 
-double result = Evaluate ("2 + 3 * 6);
+double result = Evaluate ("2 + 3 * 6");
 ```
-	
-Variables can be fed in, or retrieved, like this:
-	
-```C
-double result, c;
-SaveSymbol ("a", 22); // value for symbol "a"
-SaveSymbol ("b", 33); // value for symbol "b"
-result = Evaluate ("c = a + b");
-LookupSymbol ("c", &c); // retrieve symbol "c"
-```
-
-This effectively lets you not only return a result (the evaluated expression) but change other symbols as side-effects.
 
 ### Symbols
 
-The parser supports an unlimited number of named symbols (eg. "str", "dex") which can be pre-assigned values, or assigned during use.
+The parser supports an unlimited number of named symbols (eg. "str", "dex") which can be pre-assigned values or assigned during use of the parser.
 
-Example (in C):
+	Example: a=42, b=6, a*b
+	Result: 252
+	
+There are two built-in symbols:
+
+	pi = 3.1415926535897932385
+	e = 2.7182818284590452354
+	
+Symbols can be any length up to 256 characters, and must consist of A-Z, a-z, or 0-9, or the underscore character. They must start with A-Z or a-z. Symbols are case-sensitive.
+
+### Assignment
+
+Pre-loaded symbols, or ones created on-the-fly, can be assigned to, including the standard C operators of +=, -=, *= and /=.
+
+	Example: a=42, a/=7
+	Result: 6
+	Example: dex = 10, dex += 22
+	Result: 32
+
+Example of symbol pre-assignment and later retrieval (in C):
 ```C
 #include "parser.h"
 int ok;
@@ -82,25 +89,8 @@ SaveSymbol("dex", 67); // assign value to "dex"
 result = Evaluate ("str + dex * 2"); // use in expression
 ok = LookupSymbol("pi", &str);  // retrieve value of "str"
 ```
-	Example: a=42, b=6, a*b
-	Result: 252
-	
-There are two built-in symbols:
+This effectively lets you not only return a result (the evaluated expression) but change other symbols as side-effects.
 
-	pi = 3.1415926535897932385
-	e = 2.7182818284590452354
-	
-Symbols can be any length, and must consist of A-Z, a-z, or 0-9, or the underscore character. They must start with A-Z or a-z. Symbols are case-sensitive.
-
-### Assignment
-
-Pre-loaded symbols, or ones created on-the-fly, can be assigned to, including the standard C operators of +=, -=, *= and /=.
-
-	Example: a=42, a/=7
-	Result: 6
-	Example: dex = 10, dex += 22
-	Result: 32
-	
 ### Comparisons
 
 You can compare values for less, greater, greater-or-equal etc. using the normal C operators.
