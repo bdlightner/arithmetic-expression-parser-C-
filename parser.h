@@ -103,12 +103,4 @@ double AddSubtract(const bool get);
 double Term(const bool get);      // multiply and divide
 double Primary(const bool get);   // primary (base) tokens
 
-#define CheckToken(wanted) { \
-    if (type_ != wanted) { \
-      fprintf(stderr, "wanted %d but got %d\n", wanted, type_); \
-      exit(1); \
-    } \
-}
-
 #endif // PARSER_H
-

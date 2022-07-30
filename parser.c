@@ -67,6 +67,12 @@ is currently at:
 #define STRNCPY(dst, src, len) \
         { strncpy(dst, src, len); if (len >= 0) dst[len] = '\0'; }
 
+#define CheckToken(wanted) { \
+    if (type_ != wanted) { \
+      runtime_error("expected '%c'", (int)wanted); \
+    } \
+}
+
 static jmp_buf parse_err_jmp_buf;
 
 static char ParserErrBuf[256];
@@ -269,14 +275,14 @@ double DoFmod(const double arg1, const double arg2)
 
 double DoPow(const double arg1, const double arg2)
 {
-    int i, n;
+    int n;
     double result;
 
     n = (int)arg2;
-    if (n <= 64 && (double)n == arg2) {
+    if (n > 0 && n <= 64 && (double)n == arg2) {
         // do it the "hard way", but with more precision
         result = arg1;
-        for (i = 0; i < n - 1; ++i) result *= arg1;
+        while (--n) result *= arg1;
         return result;
     } else {
         return pow(arg1, arg2);
