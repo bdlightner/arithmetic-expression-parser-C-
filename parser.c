@@ -850,8 +850,8 @@ double Evaluate(char *expr)  // get result
     ParserErrBuf[0] = '\0';  // default to NULL error string
 
     if( !setjmp(parse_err_jmp_buf) ) {
-        SaveSymbol("pi", 3.1415926535897932385);
-        SaveSymbol("e",  2.7182818284590452354);
+        SaveSymbol("pi", M_PI); // 3.1415926535897932385
+        SaveSymbol("e",  M_E);  // 2.7182818284590452354
         ok = LookupSymbol("pi", &v);
         DBG("ok=%d, v=%g\n", ok, v);
 
